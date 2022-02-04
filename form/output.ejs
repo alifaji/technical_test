@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<style type="text/css">
+	html,body { 
+	height: 100%; 
+}
+
+.global-container{
+	height:100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: #f5f5f5;
+}
+
+form{
+	padding-top: 10px;
+	font-size: 14px;
+	margin-top: 30px;
+}
+
+.card-title{ font-weight:300; }
+
+
+
+.forms{ 
+	width:330px;
+	margin:20px;
+}
+
+
+.alert{
+	margin-bottom:-30px;
+	font-size: 13px;
+	margin-top:20px;
+}
+</style>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<body>
+<div class="global-container">
+	<div class="card forms" style="width: 700px;">
+	<div class="card-body">
+		<h3 class="card-title text-center">List Data Real Time</h3>
+		<hr />
+		<div class="card-text">
+			<div class="row">
+				<div class="col-6">
+					<table class="table table-striped" id="tableOdd">
+						<thead>
+							<tr class="text-center">
+								<th>Ganjil</th>
+								<th>#</th>
+							</tr>
+						</thead>
+						<tbody>
+							<% 
+								for(var i= 0;i< data_ganjil.length; i++){
+									if(data_ganjil[i].status == 'ganjil'){
+							%>
+							<tr class="text-center" id="tr_<%= data_ganjil[i].id %>">
+								<td><span id="span_<%= data_ganjil[i].id %>"><%= data_ganjil[i].phone_number %></span></td>
+								<td>
+									<button class="btn btn-warning" onclick="editData(<%= data_ganjil[i].id %>)">Edit</button>
+									<button class="btn btn-danger" onclick="deleteData(<%= data_ganjil[i].id %>)">Delete</button>
+								</td>
+							</tr>
+							<% }}%>
+						</tbody>
+					</table>
+				</div>
+				<div class="col-6">
+					<table class="table table-striped" id="tableEven">
+						<thead>
+							<tr class="text-center">
+								<th>Genap</th>
+								<th>#</th>
+							</tr>
+						</thead>
+						<tbody>
+							<% 
+								for(var i= 0;i< data_genap.length; i++){
+									if(data_genap[i].status == 'genap'){
+							%>
+							<tr class="text-center" id="tr_<%= data_genap[i].id %>">
+								<td><span id="span_<%= data_genap[i].id %>"><%= data_genap[i].phone_number %></span></td>
+								<td>
+									<button class="btn btn-warning" onclick="editData(<%= data_genap[i].id %>)">Edit</button>
+									<button class="btn btn-danger" onclick="deleteData(<%= data_genap[i].id %>)">Delete</button>								
+								</td>
+							</tr>
+							<% }}%>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</div>
+
+<div class="modal" role="dialog" id="modalEdit">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit No Handphone</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form id="modalForm">
+
+      <div class="modal-body">
+        <input type="hidden" name="id" id="id" class="form-control">
+        <input type="number" name="no_handphone" id="edit-phone" class="form-control">
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Save changes</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+  </form>
+    </div>
+  </div>
+</div>
+
+	
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script src="/socket.io/socket.io.js"></script>
+
+
+
+<script type="text/javascript">
+
+  var socket = io.connect('http://localhost:8001');
+
+  socket.on('listData', function (data) {
+
+
+  	let checkData = $('#span_'+ data.data.id).html()
+
+  	if(checkData != null){
+  		
+  		if((checkData % 2 == 0 && data.data.phone_number % 2 == 0) || (checkData % 2 != 0 && data.data.phone_number % 2 != 0)){
+	  		$('#span_'+ data.data.id).html(data.data.phone_number)
+  		} else{
+
+  			$('#tr_'+data.data.id).remove()
+
+  			if(data.data.status == 'genap'){
+	  		$('#tableEven > tbody:last-child').append('<tr class="text-center" id="tr_'+data.data.id+'"><td>'+data.data.phone_number+'</td><td><button class="btn btn-warning" onclick="editData('+data.data.id+')" style="margin-right:10px">Edit</button><button class="btn btn-danger" onclick="deleteData('+data.data.id+')">Delete</button></td></tr>');
+		  	} else{
+		  		$('#tableOdd > tbody:last-child').append('<tr class="text-center" id="tr_'+data.data.id+'"><td>'+data.data.phone_number+'</td><td><button class="btn btn-warning" onclick="editData('+data.data.id+')" style="margin-right:10px">Edit</button><button class="btn btn-danger" onclick="deleteData('+data.data.id+')">Delete</button></td></tr>');
+		  	}
+  		}
+
+
+  	} else{
+  		
+  		if(data.data.status == 'genap'){
+  		$('#tableEven > tbody:last-child').append('<tr class="text-center" id="tr_'+data.data.id+'"><td>'+data.data.phone_number+'</td><td><button class="btn btn-warning" onclick="editData('+data.data.id+')" style="margin-right:10px">Edit</button><button class="btn btn-danger" onclick="deleteData('+data.data.id+')">Delete</button></td></tr>');
+	  	} else{
+	  		$('#tableOdd > tbody:last-child').append('<tr class="text-center" id="tr_'+data.data.id+'"><td>'+data.data.phone_number+'</td><td><button class="btn btn-warning" onclick="editData('+data.data.id+')" style="margin-right:10px">Edit</button><button class="btn btn-danger" onclick="deleteData('+data.data.id+')">Delete</button></td></tr>');
+	  	}
+  	}
+
+	});
+
+   socket.on('listDeleteData', function(data) {
+   	console.log('')
+   		$('#tr_'+data.data.id).remove()
+   })
+
+
+  $('#modalForm').submit(function (e) {
+      e.preventDefault();
+      var no_handphone = $('#edit-phone').val()
+      var id = $('#id').val()
+      $.ajax({
+           url: '/api/update',
+           data: {no_handphone:no_handphone,id:id},
+           dataType: "JSON",           
+           type: 'POST',
+           success: function(data){
+           		alert(data.message)
+           		socket.emit('updateData',{data:data.data})
+           		$('#modalEdit').modal('toggle')
+           }
+      });
+ });
+
+  function editData(id){
+  	$.ajax({
+       url: '/api/getId/'+id,
+       dataType: "JSON",           
+       type: 'GET',
+       success: function(data){
+       		$('#edit-phone').val(data.data.phone_number)
+       		$('#id').val(id)
+
+       		$('#modalEdit').modal('toggle')
+       }
+  	});
+  }
+
+  function deleteData(id){
+  	if (confirm("Are you sure?")) {
+       $.ajax({
+           url: '/api/delete',
+           data: {id:id},
+           dataType: "JSON",           
+           type: 'POST',
+           success: function(data){
+           		alert(data.message)
+           		socket.emit('deleteData',{data:data.data})
+           		$('#tr_'+id).remove()
+           }
+      });
+
+    }
+    
+    return false;
+  }
+
+</script >
+</html>
+
