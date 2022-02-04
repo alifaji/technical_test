@@ -157,7 +157,7 @@ form{
 
 
   	} else{
-  		
+  		 $('#tr_'+data.data.id).remove()
   		if(data.data.status == 'genap'){
   		$('#tableEven > tbody:last-child').append('<tr class="text-center" id="tr_'+data.data.id+'"><td>'+data.data.phone_number+'</td><td><button class="btn btn-warning" onclick="editData('+data.data.id+')" style="margin-right:10px">Edit</button><button class="btn btn-danger" onclick="deleteData('+data.data.id+')">Delete</button></td></tr>');
 	  	} else{
